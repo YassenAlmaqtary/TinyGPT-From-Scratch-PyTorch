@@ -126,7 +126,7 @@ class TinyGPTModelTests(unittest.TestCase):
         ])
         # العربية: نجعل الهدف هو الرمز التالي، مع إعادة أول رمز في نهاية التسلسل.
         # English: Use the next token as the target, wrapping the first token to the end.
-        y = torch.roll(x, shifts=-1, dims=1)
+        y = torch.roll(x, shifts=-1, dims=1) #shape: (4, 8)
         # العربية: نستخدم خسارة التصنيف المناسبة للتنبؤ برمز من عدة رموز.
         # English: Use the classification loss for choosing among token IDs.
         loss_fn = nn.CrossEntropyLoss()
@@ -145,10 +145,11 @@ class TinyGPTModelTests(unittest.TestCase):
             initial_loss = loss_fn(
                 # العربية: نحوّل الدرجات إلى صفوف؛ كل صف يمثل توقع رمز واحد.
                 # English: Flatten logits so each row predicts one token.
-                model(x).reshape(-1, 8),
+                model(x).reshape(-1, 8), #shape:(32,8)
+                # العربية: نحو
                 # العربية: نحوّل الأهداف إلى قائمة الرموز الصحيحة المقابلة.
                 # English: Flatten the matching list of correct token IDs.
-                y.reshape(-1),
+                y.reshape(-1), # shape:(32,)
             # العربية: نحول قيمة الخسارة من موتر إلى رقم بايثون.
             # English: Convert the loss tensor into a regular Python number.
             ).item()
@@ -161,7 +162,7 @@ class TinyGPTModelTests(unittest.TestCase):
         for _ in range(200):
             # العربية: نحسب درجات التوقع لكل رمز في الدفعة.
             # English: Compute prediction logits for every token in the batch.
-            logits = model(x)
+            logits = model(x) , #shape:(4, 8, 8)
             # العربية: نقيس الفرق بين التوقعات والأهداف الصحيحة.
             # English: Measure the difference between predictions and targets.
             loss = loss_fn(logits.reshape(-1, 8), y.reshape(-1))
