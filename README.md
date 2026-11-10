@@ -49,11 +49,22 @@ Fetching the Wikipedia extracts requires an internet connection. Training can ta
 
 After training, the script saves the loss plot as `tiny_gpt_loss.png` and the best model weights to `models/tiny_gpt_best.pth`. It also prints sample generations to the terminal.
 
+## Tests
+
+Run the fast, offline model checks with:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests verify that changing future tokens cannot change earlier-position logits, and that the model can overfit one tiny batch. They use the custom attention and Transformer layers directly; no corpus download or pretrained model is needed.
+
 ## Project files
 
 | File | Description |
 | --- | --- |
 | `tiny_gpt.py` | Model, training loop, evaluation, and text generation |
+| `tiny_gpt_model.py` | Custom attention, Transformer blocks, and text generation |
 | `fetch_wiki_ai.py` | Downloads and prepares the English AI training corpus |
 | `tiny_gpt_loss.png` | Example training and validation loss plot |
 | `requirements.txt` | Python package requirements |
