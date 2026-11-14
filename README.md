@@ -49,6 +49,16 @@ Fetching the Wikipedia extracts requires an internet connection. Training can ta
 
 After training, the script saves the loss plot as `tiny_gpt_loss.png` and the best model weights to `models/tiny_gpt_best.pth`. It also prints sample generations to the terminal.
 
+## Gradio demo
+
+After fetching the corpus and training the model, launch the local web interface:
+
+```bash
+python app_gradio.py
+```
+
+Open `http://127.0.0.1:7860` in your browser. The interface uses the same corpus vocabulary and checkpoint produced by `tiny_gpt.py`. The corpus and checkpoint are local files and are not included in Git.
+
 ## Tests
 
 Run the fast, offline model checks with:
@@ -65,6 +75,7 @@ The tests verify that changing future tokens cannot change earlier-position logi
 | --- | --- |
 | `tiny_gpt.py` | Model, training loop, evaluation, and text generation |
 | `tiny_gpt_model.py` | Custom attention, Transformer blocks, and text generation |
+| `app_gradio.py` | Local Gradio text-generation interface |
 | `fetch_wiki_ai.py` | Downloads and prepares the English AI training corpus |
 | `tiny_gpt_loss.png` | Example training and validation loss plot |
 | `requirements.txt` | Python package requirements |

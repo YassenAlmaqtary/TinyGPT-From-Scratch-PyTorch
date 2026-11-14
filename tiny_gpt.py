@@ -14,7 +14,7 @@ from tiny_gpt_model import TinyGPT, generate
 # حتى تتوافق الـ prompts مثل "PyTorch" و"Neural networks" مع البيانات،
 # وبدل النصوص المولّدة بالقوالب التي تشجّع على النسخ الحرفي.
 
-data_path = Path(__file__).resolve().parent / "wiki_ai.txt"
+data_path = Path(__file__).resolve().parent / "./wiki_ai.txt"
 if not data_path.exists():
     raise FileNotFoundError(
         f"Missing {data_path.name}. Run: python fetch_wiki_ai.py"
@@ -43,6 +43,7 @@ print(chars)
 
 print("\nVocabulary size:")
 print(vocab_size)
+
 
 # ============================================================
 # 3. تحويل الحروف إلى أرقام
@@ -108,20 +109,20 @@ block_size = 128
 batch_size = 64
 shape = [batch_size, block_size]
 
-x = data[:block_size]
-y = data[1:block_size + 1] # y is the next character
+X = data[:block_size] #shape: (128,) # x هو تسلسل من الرموز
+Y = data[1:block_size + 1] # y is the next character  shape: (128,) # y هو التسلسل نفسه لكن متقدّم بمقدار رمز واحد
 
 print("\nInput x:")
-print(x)
+print(X)
 
 print("\nTarget y:")
-print(y)
+print(Y)
 
 print("\nX shape:")
-print(x.shape)
+print(X.shape)
 
 print("\nY shape:")
-print(y.shape)
+print(Y.shape)
 
 # اختيار 4 مواقع عشوائية من النص
 ix = torch.randint(high=len(data)-block_size, size=(batch_size,))
@@ -129,8 +130,8 @@ ix = torch.randint(high=len(data)-block_size, size=(batch_size,))
 print("\nRandom positions:")
 print(ix)
 
-x_batch = torch.stack([data[i:i + block_size] for i in ix])
-y_batch = torch.stack([data[i + 1:i + block_size + 1] for i in ix])
+x_batch = torch.stack([data[i:i + block_size] for i in ix]) # shape:(64,128) # x_batch هو مجموعة من التسلسلات العشوائية
+y_batch = torch.stack([data[i + 1:i + block_size + 1] for i in ix]) # shape:(64, 128) # y_batch هو مجموعة من التسلسلات العشوائية لكن متقدّم بمقدار رمز واحد
 
 print("\nX batch:")
 print(x_batch)
@@ -144,9 +145,9 @@ print(x_batch.shape)
 print("\nY batch shape:")
 print(y_batch.shape)
 
-token_embedding =nn.Embedding(vocab_size, 32)
+token_embedding =nn.Embedding(vocab_size, 32) #shape:(92, 32) # token_embedding هو تمثيل متجه لكل رمز في الـ vocabulary
 
-token_embeddings = token_embedding(x_batch)
+token_embeddings = token_embedding(x_batch) #shape:(64, 128, 32) # token_embeddings هو تمثيل متجه لكل رمز في التسلسلات العشوائية
 
 # print("\nToken embeddings:")
 # print(token_embeddings)
@@ -157,11 +158,14 @@ print(token_embeddings.shape)
 position_embedding = nn.Embedding(
     block_size,
     32
-)
+) # Shape:(128, 32) # position_embedding هو تمثيل متجه لكل موقع في التسلسل
 
-positions = torch.arange(block_size)
+positions = torch.arange(block_size) # Shape:(128) # positions هو تسلسل من
 
-position_embeddings = position_embedding(positions)
+print("\nPositions shape:")
+print(positions.shape)
+
+position_embeddings = position_embedding(positions)  #shape:(128, 32) # position_embeddings هو تمثيل متجه لكل موقع في التسلسل
 
 # print("\nPosition embeddings:")
 # print(position_embeddings)
@@ -169,7 +173,7 @@ position_embeddings = position_embedding(positions)
 print("\nPosition embeddings shape:")
 print(position_embeddings.shape)
 
-x = token_embeddings + position_embeddings
+x = token_embeddings + position_embeddings  #shape:(64, 128, 32) # x هو تمثيل متجه لكل رمز في التسلسلات العشوائية مع إضافة تمثيل الموقع
 
 # print("\nFinal input to Transformer:")
 # print(x)
@@ -661,23 +665,25 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig("tiny_gpt_loss.png", dpi=150)
+    plt.savefig(Path(__file__).resolve().parent / "tiny_gpt_loss.png", dpi=150)
     plt.show()
 
     # احفظ أفضل أوزان بعد التدريب على بيانات الذكاء الاصطناعي
-    Path("models").mkdir(exist_ok=True)
+    model_dir = Path(__file__).resolve().parent / "models"
+    model_dir.mkdir(exist_ok=True)
     if best_state is not None:
         model.load_state_dict(best_state)
 
-    torch.save(model.state_dict(), "models/tiny_gpt_best.pth")
+    checkpoint_path = model_dir / "tiny_gpt_best.pth"
+    torch.save(model.state_dict(), checkpoint_path)
     print(f"Best step: {best_step}")
     print(f"Best validation loss: {best_val:.4f}")
-    print("Best model saved to models/tiny_gpt_best.pth")
+    print(f"Best model saved to {checkpoint_path}")
 
 
     # 1. تحميل أفضل نسخة من النموذج
     checkpoint = torch.load(
-        "models/tiny_gpt_best.pth",
+        checkpoint_path,
         map_location=device,
         weights_only=True
     )
